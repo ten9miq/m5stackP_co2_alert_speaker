@@ -43,24 +43,6 @@ void setup()
 	render();
 }
 
-void playTone(uint16_t sample_rate = 1250, uint16_t time_msec = 1000)
-{
-	ledcWriteTone(SPK_CHANNEL, sample_rate);
-	delay(time_msec);
-	ledcWriteTone(SPK_CHANNEL, 0);
-}
-
-void playMusic(const uint8_t *music_data, uint16_t sample_rate)
-{
-	uint32_t length = strlen((char *)music_data);
-	uint16_t delay_interval = ((uint32_t)1000000 / sample_rate);
-	for (int i = 0; i < length; i++)
-	{
-		ledcWriteTone(SPK_CHANNEL, music_data[i] * 50);
-		delayMicroseconds(delay_interval);
-	}
-}
-
 void loop()
 {
 	auto now = millis();
