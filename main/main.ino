@@ -130,8 +130,8 @@ void render()
 	for (int i = 0; i < len; i++)
 	{
 		auto value = max(0, history[(historyPos + 1 + i) % len] - 400);
-		auto y = min(height, (int)(value * (height / 1200.0)));
-		auto color = min(255, (int)(value * (255 / 1200.0)));
+		auto y = min(height, (int)(value * (height / 2000.0)));
+		auto color = min(255, (int)(value * (255 / 2000.0)));
 		M5.Lcd.drawLine(i, height - y, i, height, M5.Lcd.color565(255, 255 - color, 255 - color));
 	}
 	M5.Lcd.setTextSize(2);
