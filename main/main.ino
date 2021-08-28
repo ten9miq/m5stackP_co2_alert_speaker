@@ -106,9 +106,8 @@ void loop()
 		int CO2 = myMHZ19.getCO2(); // Request CO2 (as ppm)
 		ledOn = CO2 >= 2000;
 
-		// 測定結果の表示
+		// 測定結果の記録
 		historyPos = (historyPos + 1) % (sizeof(history) / sizeof(int));
-		// Serial.println(sizeof(history) / sizeof(int));
 		history[historyPos] = CO2;
 
 		getDataTimer = now;
