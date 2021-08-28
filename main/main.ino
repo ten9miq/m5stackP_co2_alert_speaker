@@ -134,7 +134,16 @@ void render()
 		auto color = min(255, (int)(value * (255 / 2000.0)));
 		M5.Lcd.drawLine(i, height - y, i, height, M5.Lcd.color565(255, 255 - color, 255 - color));
 	}
+	text_render("CO2 : " + (String)history[historyPos] + " ppm");
+}
+
+void text_render(const String &string)
+{
 	M5.Lcd.setTextSize(2);
-	M5.Lcd.setTextColor(TFT_DARKGREY);
-	M5.Lcd.drawString("CO2 : " + (String)history[historyPos] + " ppm", 10, height - 30, 2);
+	M5.Lcd.setTextColor(TFT_BLACK);
+	M5.Lcd.drawString(string, 11, 11, 2);
+	M5.Lcd.drawString(string, 9, 9, 2);
+
+	M5.Lcd.setTextColor(TFT_LIGHTGREY);
+	M5.Lcd.drawString(string, 10, 10, 2);
 }
