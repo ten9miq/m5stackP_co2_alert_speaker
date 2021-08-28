@@ -8,14 +8,9 @@
 MHZ19 myMHZ19;				// Constructor for library
 HardwareSerial mySerial(1); // (ESP32 Example) create device to MH-Z19 serial
 
-#define LCD_MODE_DIGIT 0
-#define LCD_MODE_GRAPH 1
-
-#define BRIGHTNESS 8
+#define BRIGHTNESS 9
 
 bool lcdOn = true;
-int lcdMode = LCD_MODE_DIGIT;
-
 bool ledOn = false;
 bool ledValue = false;
 unsigned long nextLedOperationTime = 0;
@@ -52,8 +47,6 @@ void loop()
 	M5.Beep.update(); // tone関数で鳴らした音が指定時間経過していたら止める
 	if (M5.BtnA.wasPressed())
 	{
-		lcdMode = (lcdMode + 1) % 2;
-		render();
 	}
 
 	// Aボタン長押し: ゼロキャリブレーション
@@ -137,21 +130,15 @@ void render()
 	int width = M5.Lcd.width();
 	M5.Lcd.fillRect(0, 0, width, height, BLACK);
 
-	switch (lcdMode)
+	int len = sizeof(history) / sizeof(int);
+	for (int i = 0; i < len; i++)
 	{
-	case LCD_MODE_DIGIT:
-		M5.Lcd.drawString("CO2 [ppm]", 12, 0, 2);
-		M5.Lcd.drawRightString("		" + (String)history[historyPos], width, 24, 7);
-		break;
-	case LCD_MODE_GRAPH:
-		int len = sizeof(history) / sizeof(int);
-		for (int i = 0; i < len; i++)
-		{
-			auto value = max(0, history[(historyPos + 1 + i) % len] - 400);
-			auto y = min(height, (int)(value * (height / 1200.0)));
-			auto color = min(255, (int)(value * (255 / 1200.0)));
-			M5.Lcd.drawLine(i, height - y, i, height, M5.Lcd.color565(255, 255 - color, 255 - color));
-		}
-		break;
+		auto value = max(0, history[(historyPos + 1 + i) % len] - 400);
+		auto y = min(height, (int)(value * (height / 1200.0)));
+		auto color = min(255, (int)(value * (255 / 1200.0)));
+		M5.Lcd.drawLine(i, height - y, i, height, M5.Lcd.color565(255, 255 - color, 255 - color));
 	}
+	M5.Lcd.setTextSize(2);
+	M5.Lcd.setTextColor(TFT_DARKGREY);
+	M5.Lcd.drawString("CO2 : " + (String)history[historyPos] + " ppm", 10, height - 30, 2);
 }
