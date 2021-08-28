@@ -23,7 +23,7 @@ int historyPos = 0;
 
 void setup()
 {
-	M5.begin();
+	M5.begin(true, true, true); // LCDEnable, PowerEnable, SerialEnable(115200)
 	// dacWrite(25, 0); // Speaker OFF
 	M5.Axp.ScreenBreath(BRIGHTNESS);
 	pinMode(M5_LED, OUTPUT);
@@ -93,10 +93,7 @@ void loop()
 	{
 		int CO2 = myMHZ19.getCO2();						   // Request CO2 (as ppm)
 		int8_t temp = myMHZ19.getTemperature(false, true); // Request Temperature (as Celsius)
-		Serial.print("CO2 (ppm): ");
-		Serial.println(CO2);
-		Serial.print(", Temperature (C): ");
-		Serial.println(temp);
+		Serial.println("CO2 (ppm): " + (String)CO2 + ", Temperature (C): " + (String)temp);
 		render();
 		getViewDataTimer = now;
 	}
