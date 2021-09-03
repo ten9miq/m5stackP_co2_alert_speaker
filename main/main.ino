@@ -28,7 +28,7 @@ void setup()
 	M5.Axp.ScreenBreath(BRIGHTNESS);
 	pinMode(M5_LED, OUTPUT);
 	M5.Lcd.setRotation(1);
-	Serial.begin(9600); // Device to serial monitor feedback
+	Serial.begin(BAUDRATE); // Device to serial monitor feedback
 
 	// CO2センサー初期化
 	mySerial.begin(BAUDRATE, SERIAL_8N1, RX_PIN, TX_PIN); // (ESP32 Example) device to MH-Z19 serial start
