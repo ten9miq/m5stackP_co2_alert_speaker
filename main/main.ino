@@ -8,7 +8,7 @@
 MHZ19 myMHZ19;				// Constructor for library
 HardwareSerial mySerial(1); // (ESP32 Example) create device to MH-Z19 serial
 
-#define BRIGHTNESS 9
+#define BRIGHTNESS 8
 
 bool lcdOn = true;
 bool ledOn = false;
