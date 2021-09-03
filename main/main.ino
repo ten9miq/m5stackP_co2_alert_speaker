@@ -91,9 +91,6 @@ void loop()
 
 	if (now - getViewDataTimer >= 5000)
 	{
-		int CO2 = myMHZ19.getCO2();						   // Request CO2 (as ppm)
-		int8_t temp = myMHZ19.getTemperature(false, true); // Request Temperature (as Celsius)
-		Serial.println("CO2 (ppm): " + (String)CO2 + ", Temperature (C): " + (String)temp);
 		render();
 		getViewDataTimer = now;
 	}
@@ -134,7 +131,10 @@ void render()
 		auto color = min(255, (int)(value * (255 / 2000.0)));
 		M5.Lcd.drawLine(i, height - y, i, height, M5.Lcd.color565(255, 255 - color, 255 - color));
 	}
-	text_render("CO2 : " + (String)history[historyPos] + " ppm");
+	int CO2 = myMHZ19.getCO2();						   // Request CO2 (as ppm)
+	int8_t temp = myMHZ19.getTemperature(false, true); // Request Temperature (as Celsius)
+	Serial.println("CO2 (ppm): " + (String)CO2 + ", Temperature (C): " + (String)temp);
+	text_render("CO2 : " + (String)CO2 + " ppm");
 }
 
 void text_render(const String &string)
