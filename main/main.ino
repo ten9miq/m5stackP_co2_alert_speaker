@@ -95,7 +95,7 @@ void loop()
 		getViewDataTimer = now;
 	}
 
-	if (now - getDataTimer >= 60000) // 1分ごとにグラフを作成
+	if (now - getDataTimer >= 180000) // 3分ごとにグラフへ追加
 	{
 		/* note: getCO2() default is command "CO2 Unlimited". This returns the correct CO2 reading even
 		if below background CO2 levels or above range (useful to validate sensor). You can use the
