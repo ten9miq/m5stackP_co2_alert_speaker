@@ -57,14 +57,14 @@ void loop()
 	}
 
 	// Aボタン長押し: ゼロキャリブレーション
-	if (M5.BtnA.pressedFor(2000))
+	if (M5.BtnA.pressedFor(3000))
 	{
 		mhz19.calibrateZero();
 		M5.Beep.tone(1000, 100);
 	}
 
 	// Bボタン: 画面表示を ON/OFF する
-	if (M5.BtnB.wasPressed())
+	if (M5.BtnB.wasReleased())
 	{
 		lcdOn = !lcdOn;
 
