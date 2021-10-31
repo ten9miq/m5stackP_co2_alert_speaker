@@ -129,8 +129,8 @@ void render()
 		return;
 	}
 
-	int height = Lcd_buff.height();
-	int width = Lcd_buff.width();
+	int height = m5.Lcd.height();
+	int width = m5.Lcd.width();
 	int len = sizeof(history) / sizeof(int);
 	for (int i = 0; i < len; i++)
 	{
