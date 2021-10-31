@@ -20,6 +20,8 @@ unsigned long getViewDataTimer = 0;
 int history[240] = {};
 int historyPos = 0;
 
+//TFT_eSPI liblary
+TFT_eSprite Lcd_buff = TFT_eSprite(&M5.Lcd); // LCDのスプライト表示ライブラリ
 void setup()
 {
 	M5.begin(true, true, true); // LCDEnable, PowerEnable, SerialEnable(115200)
@@ -28,6 +30,11 @@ void setup()
 	pinMode(M5_LED, OUTPUT);
 	M5.Lcd.setRotation(1);
 	Serial.begin(BAUDRATE); // Device to serial monitor feedback
+
+	//TFT_eSPI setup
+	Lcd_buff.createSprite(m5.Lcd.width(), m5.Lcd.height());
+	Lcd_buff.fillRect(0, 0, m5.Lcd.width(), m5.Lcd.height(), TFT_BLACK);
+	Lcd_buff.pushSprite(0, 0);
 
 	// CO2センサー初期化
 	mhz19.begin(RX_PIN, TX_PIN);
@@ -109,6 +116,9 @@ void loop()
 
 void render()
 {
+	// Clear
+	Lcd_buff.fillSprite(TFT_BLACK); // 画面を黒塗りでリセット
+
 	int CO2 = mhz19.getCO2PPM();
 	ledOn = CO2 >= 2000;
 	if (!lcdOn)
@@ -116,31 +126,30 @@ void render()
 		return;
 	}
 
-	// Clear
-	int height = M5.Lcd.height();
-	int width = M5.Lcd.width();
-	M5.Lcd.fillRect(0, 0, width, height, BLACK);
-
+	int height = Lcd_buff.height();
+	int width = Lcd_buff.width();
 	int len = sizeof(history) / sizeof(int);
 	for (int i = 0; i < len; i++)
 	{
 		auto value = max(0, history[(historyPos + 1 + i) % len] - 400);
 		auto y = min(height, (int)(value * (height / 2000.0)));
 		auto color = min(255, (int)(value * (255 / 2000.0)));
-		M5.Lcd.drawLine(i, height - y, i, height, M5.Lcd.color565(255, 255 - color, 255 - color));
+		Lcd_buff.drawLine(i, height - y, i, height, Lcd_buff.color565(255, 255 - color, 255 - color));
 	}
 	int temp = mhz19.getTemperature();
 	Serial.println("CO2 (ppm): " + (String)CO2 + ", Temperature (C): " + (String)temp);
 	co2_text_render("CO2 : " + (String)CO2 + " ppm");
+	Lcd_buff.pushSprite(0, 0); // LCDに描画
 }
 
 void co2_text_render(const String &string)
 {
-	M5.Lcd.setTextSize(2);
-	M5.Lcd.setTextColor(TFT_BLACK);
-	M5.Lcd.drawString(string, 11, 11, 2);
-	M5.Lcd.drawString(string, 9, 9, 2);
+	Lcd_buff.setTextSize(2);
+	Lcd_buff.setTextColor(TFT_BLACK);
+	Lcd_buff.drawString(string, 11, 11, 2);
+	Lcd_buff.drawString(string, 9, 9, 2);
 
-	M5.Lcd.setTextColor(TFT_LIGHTGREY);
-	M5.Lcd.drawString(string, 10, 10, 2);
+	Lcd_buff.setTextColor(TFT_LIGHTGREY);
+	Lcd_buff.drawString(string, 10, 10, 2);
+
 }
