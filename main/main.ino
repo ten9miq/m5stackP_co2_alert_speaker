@@ -131,10 +131,10 @@ void render()
 	}
 	int temp = mhz19.getTemperature();
 	Serial.println("CO2 (ppm): " + (String)CO2 + ", Temperature (C): " + (String)temp);
-	text_render("CO2 : " + (String)CO2 + " ppm");
+	co2_text_render("CO2 : " + (String)CO2 + " ppm");
 }
 
-void text_render(const String &string)
+void co2_text_render(const String &string)
 {
 	M5.Lcd.setTextSize(2);
 	M5.Lcd.setTextColor(TFT_BLACK);
