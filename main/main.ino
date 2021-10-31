@@ -1,12 +1,11 @@
 #include <M5StickCPlus.h>
-#include <MHZ19.h>
+#include <MHZ19_uart.h>
+MHZ19_uart mhz19;
 
 // Co2センサー
-#define RX_PIN 33			// Rx pin which the MHZ19 Tx pin is attached to
-#define TX_PIN 32			// Tx pin which the MHZ19 Rx pin is attached to
-#define BAUDRATE 9600		// Device to MH-Z19 Serial baudrate (should not be changed)
-MHZ19 myMHZ19;				// Constructor for library
-HardwareSerial mySerial(1); // (ESP32 Example) create device to MH-Z19 serial
+#define RX_PIN 33	  // Rx pin which the MHZ19 Tx pin is attached to
+#define TX_PIN 32	  // Tx pin which the MHZ19 Rx pin is attached to
+#define BAUDRATE 9600 // Device to MH-Z19 Serial baudrate (should not be changed)
 
 #define BRIGHTNESS 8
 
@@ -31,9 +30,8 @@ void setup()
 	Serial.begin(BAUDRATE); // Device to serial monitor feedback
 
 	// CO2センサー初期化
-	mySerial.begin(BAUDRATE, SERIAL_8N1, RX_PIN, TX_PIN); // (ESP32 Example) device to MH-Z19 serial start
-	myMHZ19.begin(mySerial);							  // *Serial(Stream) refence must be passed to library begin().
-	myMHZ19.autoCalibration(true);						  // 電源投入後24時間ごとに「ゼロキャリブレーション」（その時点の二酸化炭素濃度を「大気=400ppm」と判断すること
+	mhz19.begin(RX_PIN, TX_PIN);
+	mhz19.setAutoCalibration(true);
 
 	render();
 }
@@ -52,7 +50,7 @@ void loop()
 	// Aボタン長押し: ゼロキャリブレーション
 	if (M5.BtnA.pressedFor(2000))
 	{
-		myMHZ19.calibrateZero();
+		mhz19.calibrateZero();
 		M5.Beep.tone(1000, 100);
 	}
 
@@ -100,9 +98,7 @@ void loop()
 		/* note: getCO2() default is command "CO2 Unlimited". This returns the correct CO2 reading even
 		if below background CO2 levels or above range (useful to validate sensor). You can use the
 		usual documented command with getCO2(false) */
-		int CO2 = myMHZ19.getCO2(); // Request CO2 (as ppm)
-		ledOn = CO2 >= 2000;
-
+		int CO2 = mhz19.getCO2PPM();
 		// 測定結果の記録
 		historyPos = (historyPos + 1) % (sizeof(history) / sizeof(int));
 		history[historyPos] = CO2;
@@ -113,6 +109,8 @@ void loop()
 
 void render()
 {
+	int CO2 = mhz19.getCO2PPM();
+	ledOn = CO2 >= 2000;
 	if (!lcdOn)
 	{
 		return;
@@ -131,8 +129,7 @@ void render()
 		auto color = min(255, (int)(value * (255 / 2000.0)));
 		M5.Lcd.drawLine(i, height - y, i, height, M5.Lcd.color565(255, 255 - color, 255 - color));
 	}
-	int CO2 = myMHZ19.getCO2();						   // Request CO2 (as ppm)
-	int8_t temp = myMHZ19.getTemperature(false, true); // Request Temperature (as Celsius)
+	int temp = mhz19.getTemperature();
 	Serial.println("CO2 (ppm): " + (String)CO2 + ", Temperature (C): " + (String)temp);
 	text_render("CO2 : " + (String)CO2 + " ppm");
 }
