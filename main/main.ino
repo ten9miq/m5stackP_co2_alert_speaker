@@ -24,6 +24,16 @@ unsigned long renderTime = 2000;  // 描画感覚のミリ秒
 
 //TFT_eSPI liblary
 TFT_eSprite Lcd_buff = TFT_eSprite(&M5.Lcd); // LCDのスプライト表示ライブラリ
+
+// LCD Timer
+const uint8_t timer_mm = 10; // タイマーの分数
+const uint8_t timer_ss = 0;	 // タイマーの秒数
+unsigned long get_silent_timer = 0;
+const unsigned long silent_timer_limit = 600000; // タイマーの分と秒の合算ミリ秒数(10分)
+uint8_t mm = 0, ss = 0;
+boolean is_measuring = true;
+byte xsecs = 0, omm = 99, oss = 99;
+
 void setup()
 {
 	M5.begin(true, true, true); // LCDEnable, PowerEnable, SerialEnable(115200)
@@ -52,8 +62,10 @@ void loop()
 	// Aボタン: モードを切り替える
 	M5.update();
 	M5.Beep.update(); // tone関数で鳴らした音が指定時間経過していたら止める
-	if (M5.BtnA.wasPressed())
+	// Aボタン: サイレントモード
+	if (M5.BtnA.wasReleased())
 	{
+		silent_timer_reset();
 	}
 
 	// Aボタン長押し: ゼロキャリブレーション
@@ -83,7 +95,11 @@ void loop()
 	{
 		ledValue = !ledValue;
 		digitalWrite(M5_LED, ledValue);
-		M5.Beep.tone(4000, 1000);
+		// サイレント時間であれば音を鳴らさない
+		if (get_silent_timer <= now)
+		{
+			M5.Beep.tone(4000, 1000);
+		}
 
 		// Lチカ
 		if (ledValue)
@@ -142,6 +158,7 @@ void render()
 	int temp = mhz19.getTemperature();
 	Serial.println("CO2 (ppm): " + (String)CO2 + ", Temperature (C): " + (String)temp);
 	co2_text_render("CO2 : " + (String)CO2 + " ppm");
+	tone_timer_view();
 	Lcd_buff.pushSprite(0, 0); // LCDに描画
 }
 
@@ -154,5 +171,67 @@ void co2_text_render(const String &string)
 
 	Lcd_buff.setTextColor(TFT_LIGHTGREY);
 	Lcd_buff.drawString(string, 10, 10, 2);
+}
 
+void silent_timer_reset()
+{
+	get_silent_timer = millis() + silent_timer_limit; // 10分サイレント
+	mm = timer_mm;
+	ss = timer_ss;
+}
+
+void tone_timer_view()
+{
+	if (get_silent_timer >= millis())
+	{
+		if (ss == 0 && mm == 0)
+		{
+			return;
+		}
+		else
+		{
+			ss = ss - renderTime / 1000;
+		}
+		if (ss >= 60)
+		{						  // Check for roll-over
+			ss = 59 + (ss - 255); // Reset seconds to zero
+			mm = mm - 1;		  // Advance minute
+			if (mm == 255)
+			{ // Check for roll-over
+				mm = 0;
+			}
+		}
+	}
+	else
+	{
+		return;
+	}
+	// Draw digital time
+	int xpos = 60;
+	int ypos = 60; // Top left corner ot clock text, about half way down
+	int ysecs = ypos;
+	Lcd_buff.setTextColor(TFT_GREEN);
+	// Redraw hours and minutes time every minute
+	omm = mm;
+	if (mm < 10)
+		xpos += Lcd_buff.drawChar('0', xpos, ypos, 4);
+	xpos += Lcd_buff.drawNumber(mm, xpos, ypos, 4);
+	xsecs = xpos;
+	// Redraw seconds time every second
+	oss = ss;
+	xpos = xsecs;
+	if (ss % 2)
+	{														 // Flash the colons on/off
+		Lcd_buff.setTextColor(0x39C4);						 // Set colour to grey to dim colon
+		xpos += Lcd_buff.drawChar(':', xsecs, ysecs - 8, 4); // Seconds colon
+		Lcd_buff.setTextColor(TFT_GREEN);
+	}
+	else
+	{
+		xpos += Lcd_buff.drawChar(':', xsecs, ysecs - 8, 4); // Seconds colon
+	}
+	//Draw seconds
+	if (ss < 10)
+		xpos += Lcd_buff.drawChar('0', xpos, ysecs, 4); // Add leading zero
+	Lcd_buff.drawNumber(ss, xpos, ysecs, 4);			// Draw seconds
 }
