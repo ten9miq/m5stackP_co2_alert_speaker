@@ -13,12 +13,14 @@ bool lcdOn = true;
 bool ledOn = false;
 bool ledValue = false;
 unsigned long nextLedOperationTime = 0;
-
-unsigned long getDataTimer = 0;
+unsigned long get_graph_timer = 0;
 unsigned long getViewDataTimer = 0;
 
 int history[240] = {};
 int historyPos = 0;
+
+float co2_tone_on_limit = 2000.0; // トーンを鳴らすco2の閾値
+unsigned long renderTime = 2000;  // 描画感覚のミリ秒
 
 //TFT_eSPI liblary
 TFT_eSprite Lcd_buff = TFT_eSprite(&M5.Lcd); // LCDのスプライト表示ライブラリ
@@ -94,13 +96,13 @@ void loop()
 		}
 	}
 
-	if (now - getViewDataTimer >= 5000)
+	if (now - getViewDataTimer >= renderTime)
 	{
 		render();
 		getViewDataTimer = now;
 	}
 
-	if (now - getDataTimer >= 180000) // 3分ごとにグラフへ追加
+	if (now - get_graph_timer >= 180000) // 3分ごとにグラフへ追加
 	{
 		/* note: getCO2() default is command "CO2 Unlimited". This returns the correct CO2 reading even
 		if below background CO2 levels or above range (useful to validate sensor). You can use the
@@ -110,7 +112,7 @@ void loop()
 		historyPos = (historyPos + 1) % (sizeof(history) / sizeof(int));
 		history[historyPos] = CO2;
 
-		getDataTimer = now;
+		get_graph_timer = now;
 	}
 }
 
@@ -120,8 +122,9 @@ void render()
 	Lcd_buff.fillSprite(TFT_BLACK); // 画面を黒塗りでリセット
 
 	int CO2 = mhz19.getCO2PPM();
-	ledOn = CO2 >= 2000;
-	if (!lcdOn)
+	ledOn = CO2 >= co2_tone_on_limit; // LEDをON
+
+	if (!lcdOn) // 描画OFFであれば処理を抜ける
 	{
 		return;
 	}
@@ -132,8 +135,8 @@ void render()
 	for (int i = 0; i < len; i++)
 	{
 		auto value = max(0, history[(historyPos + 1 + i) % len] - 400);
-		auto y = min(height, (int)(value * (height / 2000.0)));
-		auto color = min(255, (int)(value * (255 / 2000.0)));
+		auto y = min(height, (int)(value * (height / co2_tone_on_limit)));
+		auto color = min(255, (int)(value * (255 / co2_tone_on_limit)));
 		Lcd_buff.drawLine(i, height - y, i, height, Lcd_buff.color565(255, 255 - color, 255 - color));
 	}
 	int temp = mhz19.getTemperature();
