@@ -3,8 +3,8 @@
 MHZ19_uart mhz19;
 
 // Co2センサー
-#define RX_PIN 33	  // Rx pin which the MHZ19 Tx pin is attached to
-#define TX_PIN 32	  // Tx pin which the MHZ19 Rx pin is attached to
+#define RX_PIN 36	  // Rx pin which the MHZ19 Tx pin is attached to
+#define TX_PIN 0	  // Tx pin which the MHZ19 Rx pin is attached to
 #define BAUDRATE 9600 // Device to MH-Z19 Serial baudrate (should not be changed)
 
 #define BRIGHTNESS 8
@@ -50,7 +50,7 @@ void setup()
 
 	// CO2センサー初期化
 	mhz19.begin(RX_PIN, TX_PIN);
-	mhz19.setAutoCalibration(true);
+	mhz19.setAutoCalibration(false);
 
 	render();
 }
