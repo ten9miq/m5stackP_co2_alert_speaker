@@ -25,6 +25,9 @@ unsigned long renderTime = 2000;   // 描画感覚のミリ秒
 // TFT_eSPI liblary
 TFT_eSprite Lcd_buff = TFT_eSprite(&M5.Lcd);  // LCDのスプライト表示ライブラリ
 
+#include "Battery.h"
+Battery battery = Battery();
+
 // LCD Timer
 const uint8_t timer_mm = 10;  // タイマーの分数
 const uint8_t timer_ss = 0;	  // タイマーの秒数
@@ -143,6 +146,7 @@ void render() {
 	Serial.println("CO2 (ppm): " + (String)CO2 + ", Temperature (C): " + (String)temp);
 	co2_text_render("CO2 : " + (String)CO2 + " ppm");
 	tone_timer_view();
+	battery_render();
 	Lcd_buff.pushSprite(0, 0);	// LCDに描画
 }
 
@@ -154,6 +158,20 @@ void co2_text_render(const String &string) {
 
 	Lcd_buff.setTextColor(TFT_LIGHTGREY);
 	Lcd_buff.drawString(string, 10, 10, 2);
+}
+
+void battery_render() {
+	Lcd_buff.setTextSize(1);
+	Lcd_buff.setCursor(m5.Lcd.width() - 33, 7);
+	int battery_percent = battery.calcBatteryPercent();
+	if (battery_percent > 80) {
+		Lcd_buff.setTextColor(TFT_GREEN);
+	} else if (battery_percent > 30) {
+		Lcd_buff.setTextColor(TFT_YELLOW);
+	} else {
+		Lcd_buff.setTextColor(TFT_RED);
+	}
+	Lcd_buff.printf("%3d %%", battery_percent);
 }
 
 void silent_timer_reset() {
